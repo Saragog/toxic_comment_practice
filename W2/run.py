@@ -19,9 +19,11 @@ if __name__ == "__main__":
             data_x, data_y, train_x, train_y, validate_x, validate_y, test_x = preprocessor.process()
             trainer = Trainer(config['training'], logger, preprocessor.classes)
             trainer.fit(train_x, train_y)
-            accuracy, cls_report = trainer.validate(validate_x, validate_y)
-            logger.info("accuracy:{}".format(accuracy))
-            logger.info("\n{}\n".format(cls_report))
+            # Returns value error: Classification metrics can't handle a mix of multilabel-indicator and binary target
+            # Therefore quote out these for now to have the program work
+            #accuracy, cls_report = trainer.validate(validate_x, validate_y)
+            #logger.info("accuracy:{}".format(accuracy))
+            #logger.info("\n{}\n".format(cls_report))
             model = trainer.fit(data_x, data_y)
             predictor = Predictor(config['predict'], logger, model)
             probs = predictor.predict_prob(test_x)

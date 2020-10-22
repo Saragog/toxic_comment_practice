@@ -14,9 +14,11 @@ from tensorflow.keras.utils import to_categorical
 class CnnModel(object):
     def __init__(self, classes):
         self.models = {}
-        self.classes = classes[:1]
+        self.classes = classes
 
     def fit(self, train_x, train_y):
+        # It seems hard to pass the tokenizer to the model here to calculate the vocab_size
+        # Therefore directly build the vectorization inside model
         max_features = 20000
         maxlen = 50
         self.tokenizer = tokenizer = Tokenizer(num_words=max_features)
@@ -26,14 +28,11 @@ class CnnModel(object):
         vectorized_train_x = pad_sequences(list_tokenized_train, maxlen=maxlen, padding='post')
         vocab_size = len(tokenizer.word_index)
 
-        list_tokenized_test = self.tokenizer.texts_to_sequences(test_x)
-        self.vectorized_test_x = pad_sequences(list_tokenized_test, maxlen=maxlen, padding='post')
-
         for idx, cls in enumerate(self.classes):
             print("Building Model")
 
             model = tf.keras.models.Sequential()
-            model.add(Embedding(vocab_size + 1, 300, input_length=50)) 
+            model.add(Embedding(vocab_size + 1, 100, input_length=50)) 
             model.add(Convolution1D(256, 5, padding='same'))
             model.add(MaxPooling1D(3, 3, padding='same'))
             model.add(Convolution1D(128, 5, padding='same'))
@@ -52,6 +51,7 @@ class CnnModel(object):
             self.models[cls] = model
 
             class_labels = train_y[:,idx]
+            # This is recommended by one of the error returned.
             class_labels_binarized_the_way_keras_wants = to_categorical(class_labels)
             print("fitting model")
 
@@ -60,20 +60,32 @@ class CnnModel(object):
             
 
     def predict(self, test_x):
+        # It is pretty lame to use repeated code here but need to vectorize test X inside model
+        if not hasattr(self, 'vectorized_test_x'):
+            maxlen = 50
+            list_tokenized_test = self.tokenizer.texts_to_sequences(test_x)
+            vectorized_test_x = pad_sequences(list_tokenized_test, maxlen=maxlen, padding='post')
+
         predictions = np.zeros((test_x.shape[0], len(self.classes)))
+        print("start predicting")
         for idx, cls in enumerate(self.classes):
-            print("start predicting")
-            test_x = self.vectorized_test_x
-            y_test_evl=self.models[cls].predict(test_x)
+            print(idx, cls)
+            y_test_evl=self.models[cls].predict(vectorized_test_x)
+            print("y_test_evl", y_test_evl)
+            print("predictions",predictions)
             predictions[:, idx]=[i.argmax() for i in y_test_evl]
+            print("new predictions", predictions)
         return predictions
 
     def predict_prob(self, test_x):
+        if not hasattr(self, 'vectorized_test_x'):
+            maxlen = 50
+            list_tokenized_test = self.tokenizer.texts_to_sequences(test_x)
+            vectorized_test_x = pad_sequences(list_tokenized_test, maxlen=maxlen, padding='post')
+
         probs = np.zeros((test_x.shape[0], len(self.classes)))
         for idx, cls in enumerate(self.classes):
             print("start predict prob")
-            test_x = self.vectorized_test_x
-            probs[:, idx] = self.models[cls].predict_proba(test_x)[:,1]
+            probs[:, idx] = self.models[cls].predict_proba(vectorized_test_x)[:,1]
         return probs
 
- 
