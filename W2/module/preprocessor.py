@@ -5,6 +5,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+import tensorflow as tf
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 class Preprocessor(object):
     def __init__(self, config, logger):
@@ -16,6 +19,18 @@ class Preprocessor(object):
     @staticmethod
     def clean_text(text):
         text = text.strip().lower().replace('\n', '')
+        text = re.sub(r"what's", "what is ", text)
+        text = re.sub(r"\'s", " ", text)
+        text = re.sub(r"\'ve", " have ", text)
+        text = re.sub(r"can't", "cannot ", text)
+        text = re.sub(r"n't", " not ", text)
+        text = re.sub(r"i'm", "i am ", text)
+        text = re.sub(r"\'re", " are ", text)
+        text = re.sub(r"\'d", " would ", text)
+        text = re.sub(r"\'ll", " will ", text)
+        text = re.sub(r"\'scuse", " excuse ", text)
+        text = re.sub("[^a-zA-Z]"," ", text)
+        
         # tokenization
         words = re.split(r'\W+', text)  # or just words = text.split()
         # filter punctuation
@@ -69,6 +84,8 @@ class Preprocessor(object):
         elif input_convertor == 'tfidf_vectorization':
             train_x, validate_x = self.tfidf_vectorization(train_x, validate_x)
             data_x, test_x = self.tfidf_vectorization(data_x, test_x)
+        elif input_convertor == 'skip':
+            pass
 
         return data_x, data_y, train_x, train_y, validate_x, validate_y, test_x
 
@@ -83,3 +100,4 @@ class Preprocessor(object):
         vectorized_train_x = vectorizer.fit_transform(train_x)
         vectorized_test_x  = vectorizer.transform(test_x)
         return vectorized_train_x, vectorized_test_x
+

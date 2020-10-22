@@ -1,6 +1,6 @@
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-from module.model import NaiveBayer
+from module.model import NaiveBayer, CnnModel
 
 class Trainer(object):
     def __init__(self, config, logger, classes):
@@ -12,6 +12,8 @@ class Trainer(object):
     def _create_model(self, classes):
         if self.config['model_name'] == 'naivebayse':
             self.model = NaiveBayer(classes)
+        elif self.config['model_name'] == 'cnn':
+            self.model = CnnModel(classes)
         else:
             self.logger.warning("Model Type:{} is not support yet".format(self.config['model_name']))
 
