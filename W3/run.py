@@ -19,6 +19,8 @@ if __name__ == "__main__":
             _, _, train_x, train_y, validate_x, validate_y, test_x = preprocessor.process()
             if config['training']['model_name'] != 'naivebayse':
                 config['training']['vocab_size'] = len(preprocessor.word2ind.keys())
+                print('got embedding:', preprocessor.embedding_matrix)
+                config['training']['embedding_matrix'] = preprocessor.embedding_matrix
 
             trainer = Trainer(config['training'], logger, preprocessor.classes)
             model, accuracy, cls_report, history = trainer.fit_and_validate(train_x, train_y, validate_x, validate_y)

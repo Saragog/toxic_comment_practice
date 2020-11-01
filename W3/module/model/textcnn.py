@@ -1,8 +1,8 @@
 from tensorflow import keras
-from keras import layers
-from keras.models import Sequential
-from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense, Dropout, Flatten, MaxPooling1D, Input, Concatenate
+from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense, Dropout, Flatten, MaxPooling1D, Input, Concatenate
 
 class TextCNN(object):
     def __init__(self, classes, config):
@@ -14,9 +14,17 @@ class TextCNN(object):
 
     def _build(self):
         model = Sequential()
-        model.add(Embedding(self.config['vocab_size'], self.config['embedding_dim'],
-                                input_length=self.config['maxlen'],
-                                embeddings_initializer="uniform", trainable=True))
+
+        model.add(Embedding(self.config['vocab_size'], 
+                            self.config['embedding_dim'], 
+                            weights=[self.config['embedding_matrix']],
+                            input_length=self.config['maxlen'],
+                            trainable=False))
+
+        #model.add(Embedding(self.config['vocab_size'], self.config['embedding_dim'],
+        #                        input_length=self.config['maxlen'],
+        #                        embeddings_initializer="uniform", trainable=True))
+
         model.add(Conv1D(128, 7, activation='relu',padding='same'))
         model.add(MaxPooling1D())
         model.add(Conv1D(256, 5, activation='relu',padding='same'))
@@ -32,14 +40,19 @@ class TextCNN(object):
                       loss='binary_crossentropy',
                       metrics=['accuracy'])
         model.summary()
+
+        print('model built')
+
         return model
 
     def fit_and_validate(self, train_x, train_y, validate_x, validate_y):
+        print('start fitting')
         history = self.model.fit(train_x, train_y,
                             epochs=self.config['epochs'],
                             verbose=True,
                             validation_data=(validate_x, validate_y),
                             batch_size=self.config['batch_size'])
+        print('done fitting')
         predictions = self.predict(validate_x)
         return predictions, history
 

@@ -3,9 +3,11 @@ import string
 import pandas as pd
 import numpy as np
 from tensorflow import keras
+from tensorflow.keras.preprocessing.text import Tokenizer
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+import zipfile
 
 class Preprocessor(object):
     def __init__(self, config, logger):
@@ -96,6 +98,9 @@ class Preprocessor(object):
 
         specialtokens = ['<pad>','<unk>']
 
+        # Reference from: https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html
+        # Glove vector downloaded from: https://nlp.stanford.edu/projects/glove/
+
         def addword(word2ind,ind2word,word):
             if word in word2ind:
                 return
@@ -108,6 +113,39 @@ class Preprocessor(object):
         for sent in train_x:
             for word in sent:
                 addword(self.word2ind, self.ind2word, word)
+      
+        # load Glove
+        embeddings_index = {}
+        with zipfile.ZipFile(self.config['input_embedding']) as myzip:
+            with myzip.open('glove.6B.100d.txt') as files:
+                f = files.read().decode()
+        
+        for line in f.splitlines():
+            values = line.split()
+            word = values[0]
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+
+        print('Found %s word vectors.' % len(embeddings_index))
+
+        # compute embedding matrix
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(train_x)
+        sequences = tokenizer.texts_to_sequences(train_x)
+
+
+        word_index = tokenizer.word_index
+
+        embedding_matrix = np.zeros((len(word_index) + len(specialtokens), self.config['embedding_dim']))
+        for word, i in word_index.items():
+            embedding_vector = embeddings_index.get(word)
+            if embedding_vector is not None:
+                # words not found in embedding index will be all-zeros.
+                embedding_matrix[i] = embedding_vector
+
+
+        self.embedding_matrix = embedding_matrix
+
 
         train_x_ids = []
         for sent in train_x:
