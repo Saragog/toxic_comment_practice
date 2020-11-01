@@ -23,6 +23,7 @@ preprocessing:
   input_text_column: comment_text
   input_trainset: ./data/mini_train.csv
   input_embedding: ./data/glove.6B.zip
+  embedding_dim: 100
   random_seed: 0
   split_ratio: 0.3
   maxlen: 128
