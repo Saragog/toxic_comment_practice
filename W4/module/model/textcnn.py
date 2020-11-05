@@ -1,8 +1,8 @@
 from tensorflow import keras
-from keras import layers
-from keras.models import Sequential
-from keras.preprocessing.sequence import pad_sequences
-from keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense, Dropout, Flatten, MaxPooling1D, Input, Concatenate
+from tensorflow.keras import layers
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense, Dropout, Flatten, MaxPooling1D, Input, Concatenate
 
 class TextCNN(object):
     def __init__(self, classes, config, pretrained_embedding):

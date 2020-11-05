@@ -1,6 +1,6 @@
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
-from module.model import NaiveBayer, TextCNN
+from module.model import NaiveBayer, TextCNN, Transformer
 
 class Trainer(object):
     def __init__(self, config, logger, classes, pretrained_embedding):
@@ -15,6 +15,8 @@ class Trainer(object):
             self.model = NaiveBayer(classes)
         elif self.config['model_name'] == 'textcnn':
             self.model = TextCNN(classes, self.config, self.pretrained_embedding)
+        elif self.config['model_name'] == 'transformer':
+            self.model = Transformer(classes, self.config, self.pretrained_embedding)
         else:
             self.logger.warning("Model Type:{} is not support yet".format(self.config['model_name']))
 
