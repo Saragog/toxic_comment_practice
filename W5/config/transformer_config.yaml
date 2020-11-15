@@ -1,0 +1,34 @@
+preprocessing:
+  classes:
+  - toxic
+  - severe_toxic
+  - obscene
+  - threat
+  - insult
+  - identity_hate
+  embedding_dim: 300
+  input_convertor: nn_vectorization
+  input_id_column: id
+  input_testset: ./data/test.csv
+  input_text_column: comment_text
+  input_trainset: ./data/train.csv
+  maxlen: 150
+  pretrained_embedding: ./data/glove.840B.300d.txt
+  random_seed: 0
+  split_ratio: 0.3
+predict:
+  output_path: ./data/submission.csv
+training:
+  batch_normalization: true
+  batch_size: 128
+  dropout_rate: 0.2
+  embedding_dim: 300
+  num_heads: 2
+  ff_dim: 32
+  epochs: 5
+  gradient_cliping: true
+  learning_rate: 0.8
+  maxlen: 150
+  max_features: 100000
+  model_name: transformer
+  optimizer: sgd
